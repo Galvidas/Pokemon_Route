@@ -1,2 +1,7 @@
 networkx==3.6.1
+numpy==2.4.3
 packaging==26.0
+pillow==12.1.1
+pyswip==0.3.3
+scikit-fuzzy==0.5.0
+scipy==1.17.1
