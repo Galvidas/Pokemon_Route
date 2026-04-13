@@ -34,9 +34,18 @@ class PokemonGame:
 
     def total_attack(self, attacker_types, defender_types):
 
-        # TO DO
+        bestEffect = 0
 
-        return 0
+        for attacker_type in attacker_types:
+            combinedEffect = 1
+            for defender_type in defender_types:
+                combination = list(self.prolog.query(f"attack({attacker_type},{defender_type},Effect)"))
+                combinedEffect *= combination[0]['Effect']
+
+            if combinedEffect > bestEffect:
+                bestEffect = combinedEffect
+
+        return bestEffect
 
     # --------------------------------
 
@@ -67,10 +76,52 @@ class PokemonGame:
 
     # --------------------------------
 
-    def it_wins(self, prob):
-        r = random.random()
-        print("Random value:", r)
-        return r < prob
+    def compute_damage(self, attacker_types, defender_types):
+        damage = self.total_attack(attacker_types, defender_types)
+        
+        message = ""
+        if damage == 0:
+            message = "It doesn't affect the opponent..."
+        elif damage < 1:
+            message = "It's not very effective..."
+        elif damage > 1:
+            message = "It's super effective!"
+
+        success = random.random()
+        if success < 0.05:
+            damage = 0
+            message = "Oh no! The attack missed!"
+        elif success > 0.95:
+            damage *= 2
+            message = "Critical hit!"
+
+        return damage, message
+    
+    # --------------------------------
+
+    def it_wins(self, next_room):
+        opponent_name = next_room[1]
+        opponent_hp = next_room[2]
+        opponent_types = next_room[5]
+        print(f"A wild {opponent_name.capitalize()} appears! Level: {opponent_hp}, Type: {opponent_types}")
+        first = random.random() > 0.5
+        print("First attack:", "Player" if first else "Opponent")
+
+        player_hp = self.pokemon_level
+        while player_hp > 0 and opponent_hp > 0:
+            if first:
+                damage, message = self.compute_damage(self.pokemon_starter_types, opponent_types)
+                opponent_hp -= damage
+                print(f"{self.pokemon_starter_name.capitalize()} attacks! {message}")
+                print(f"Damage: {damage}, {opponent_name.capitalize()} HP: {max(0, opponent_hp)}")
+            else:
+                damage, message = self.compute_damage(opponent_types, self.pokemon_starter_types)
+                player_hp -= damage
+                print(f"{opponent_name.capitalize()} attacks! {message}")
+                print(f"Damage: {damage}, {self.pokemon_starter_name.capitalize()} HP: {max(0, player_hp)}")
+            first = not first
+
+        return player_hp > 0
 
     # --------------------------------
 
@@ -127,7 +178,7 @@ class PokemonGame:
                 return None, None, None, True
         else:
             print(f"Next Room: {next_room}, probability of win: {prob}")
-            won = self.it_wins(prob)
+            won = self.it_wins(next_room)
             self.game_over = not won
             
             if won:
