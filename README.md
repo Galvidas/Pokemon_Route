@@ -40,7 +40,9 @@ pokemon_route/
 │   └── pokemon_list.pl         # 150 Pokémon facts
 ├── images/                     # Pokémon sprites
 ├── requirements.txt
+├── README.mp #  Text file for installing the requirments
 └── README.md
+
 ```
  
 ---
